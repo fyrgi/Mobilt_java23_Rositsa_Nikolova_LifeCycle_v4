@@ -2,6 +2,7 @@ package se.gritacademy.lifecyklev2
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.widget.Button
 import android.widget.EditText
 import android.widget.Toast
@@ -25,6 +26,7 @@ class LoginActivity : AppCompatActivity() {
             if (username == "admin" && password == "password") {
                 // Navigera till profilsidan
                 val intent = Intent(this, ProfileActivity::class.java)
+                Log.d("LoginActivity", "Navigating to ProfileActivity")
                 startActivity(intent)
             } else {
                 Toast.makeText(this, "Invalid login credentials", Toast.LENGTH_SHORT).show()

@@ -5,6 +5,7 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import android.widget.Button
 import android.widget.CheckBox
 import android.widget.EditText
@@ -28,29 +29,38 @@ class ProfileActivity : AppCompatActivity() {
             // Set the ImageView to display the selected image
             profileImageView.setImageURI(uri)
             Toast.makeText(this, "Profile image updated!", Toast.LENGTH_SHORT).show()
+        } else {
+            Toast.makeText(this, "No image selected!", Toast.LENGTH_SHORT).show()
         }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_profile)
+        Log.d("ProfileActivity", "onCreate called")
 
-        // Withdraw the data from SharedPreferences.
         profileImageView = findViewById(R.id.profileImageView)
         val changeImageButton = findViewById<Button>(R.id.changeImageButton)
         sharedPreferences = getSharedPreferences("UserProfile", Context.MODE_PRIVATE)
 
-        // Load saved profile image, if available
+        // Load saved profile image
         val savedImageUri = sharedPreferences.getString("profileImageUri", null)
         if (savedImageUri != null) {
-            profileImageView.setImageURI(Uri.parse(savedImageUri))
+            try {
+                profileImageView.setImageURI(Uri.parse(savedImageUri))
+            } catch (e: Exception) {
+                Log.e("ProfileActivity", "Failed to load image URI: $savedImageUri", e)
+                profileImageView.setImageResource(R.drawable.baseline_image_24) // Default image
+            }
+        } else {
+            profileImageView.setImageResource(R.drawable.baseline_image_24) // Default image
         }
 
         changeImageButton.setOnClickListener {
             pickImageLauncher.launch("image/*")
         }
 
-        // navigate back to login
+        // Navigation back to login
         val bottomNavigationView = findViewById<BottomNavigationView>(R.id.bottomNavigationView)
         bottomNavigationView.setOnItemSelectedListener { item ->
             when (item.itemId) {
@@ -68,7 +78,7 @@ class ProfileActivity : AppCompatActivity() {
         val genderRadioGroup = findViewById<RadioGroup>(R.id.genderRadioGroup)
         val submitButton = findViewById<Button>(R.id.submitButton)
 
-        // Prepare the data that already is added.
+        // Load saved profile data
         ageEditText.setText(sharedPreferences.getString("age", ""))
         emailEditText.setText(sharedPreferences.getString("email", ""))
         hasLicenseCheckBox.isChecked = sharedPreferences.getBoolean("hasLicense", false)
@@ -84,7 +94,6 @@ class ProfileActivity : AppCompatActivity() {
             Toast.makeText(this, "No gender found in SharedPreferences!", Toast.LENGTH_SHORT).show()
         }
 
-
         submitButton.setOnClickListener {
             val age = ageEditText.text.toString()
             val email = emailEditText.text.toString()
@@ -92,7 +101,7 @@ class ProfileActivity : AppCompatActivity() {
             val genderId = genderRadioGroup.checkedRadioButtonId
             val gender = findViewById<RadioButton>(genderId)?.text.toString()
 
-            // Save the information without the picture to shared preferences.
+            // Save profile information
             sharedPreferences.edit().apply {
                 putString("age", age)
                 putString("email", email)
@@ -101,7 +110,6 @@ class ProfileActivity : AppCompatActivity() {
                 apply()
             }
             Toast.makeText(this, "Profile saved!", Toast.LENGTH_SHORT).show()
-
         }
     }
 }
